@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# 
+#
 # mc-toolkit - generate_worth.py
 # © 2020-2024 Vinyl Da.i'gyu-Kazotetsu [https://www.queengoob.org].
 # This code is licensed under the GNU GPLv3 license (https://choosealicense.com/licenses/gpl-3.0/).
@@ -45,6 +45,7 @@ def remap_ingredient(item_id):
 		'WOODEN_FENCES': 'OAK_FENCE',
 		'WOODEN_TOOL_MATERIALS': 'OAK_PLANKS',
 		'STONE_TOOL_MATERIALS': 'COBBLESTONE',
+		'COPPER_TOOL_MATERIALS': 'COPPER_INGOT',
 		'IRON_TOOL_MATERIALS': 'IRON_INGOT',
 		'GOLD_TOOL_MATERIALS': 'GOLD_INGOT',
 		'DIAMOND_TOOL_MATERIALS': 'DIAMOND',
@@ -131,11 +132,39 @@ def calculate_worth(worth, items):
 			)
 			continue
 
+		# Oxidized copper lightning rod
+		elif item.startswith(("EXPOSED_LIGHTNING_ROD", "WEATHERED_LIGHTNING_ROD", "OXIDIZED_LIGHTNING_ROD")):
+			base_copper_item = "LIGHTNING_ROD"
+			if not base_copper_item in worth:
+				continue # Need to wait for calculation
+			add_to_worth(worth, item, worth[base_copper_item] *
+				(0.5 if item.startswith('EXPOSED') else 0.4 if item.startswith('WEATHERED') else 0.3)
+			)
+			continue
+
 		# Damaged anvils (CHIPPED_ANVIL, DAMAGED_ANVIL)
 		elif item.endswith("_ANVIL"):
 			if not 'ANVIL' in worth:
 				continue # Need to wait for calculation
 			add_to_worth(worth, item, worth['ANVIL'] * (0.5 if item == 'CHIPPED_ANVIL' else 0.25))
+			continue
+
+		# Copper golem statues
+		elif item == "COPPER_GOLEM_STATUE":
+			if not 'COPPER_BLOCK' in worth:
+				continue # Need to wait for calculation
+			if not 'CARVED_PUMPKIN' in worth:
+				continue # Need to wait for calculation
+			if not 'JACK_O_LANTERN' in worth:
+				continue # Need to wait for calculation
+			add_to_worth(worth, item, worth['COPPER_BLOCK'] + min(worth['CARVED_PUMPKIN'], worth['JACK_O_LANTERN']))
+			continue
+
+		# Copper golem statues
+		elif item == "POTION{potion:water}":
+			if not 'GLASS_BOTTLE' in worth:
+				continue # Need to wait for calculation
+			add_to_worth(worth, item, worth['GLASS_BOTTLE'] + 4)
 			continue
 
 		if not recipe:
@@ -256,8 +285,7 @@ def add_potions(recipes):
 			strong_opposite_splash = ('SPLASH_POTION{potion:strong' + name + '}' for name in opposite if name in has_upgraded)
 			strong_opposite_lingering = ('LINGERING_POTION{potion:strong' + name + '}' for name in opposite if name in has_upgraded)
 
-		if potion_name != 'water':
-			recipes[full_name] = []
+		recipes[full_name] = []
 		recipes[splash_name] = []
 		recipes[lingering_name] = []
 		recipes[full_tipped] = {'count': 8, 'ingredients': {lingering_name: 1, "ARROW": 8}, 'pattern': [["ARROW", "ARROW", "ARROW"], ["ARROW", lingering_name, "ARROW"], ["ARROW", "ARROW", "ARROW"]]}
@@ -314,6 +342,9 @@ def generate_worth(mc_version, no_cache=False, outpath=output_dir / "worth.yml",
 	for i in items:
 		if i not in worth:
 			print(f'{i} was not calculated!', f'Its recipe was {items[i]}' if items[i] else 'It has no recipe!')
+			if items[i]:
+				for item_name in items[i][0]['ingredients']:
+					print(item_name + ': ', worth[item_name])
 		elif worth[i] == 0.0:
 			print(f'{i} resulted in a value of 0.00, calculation error!')
 

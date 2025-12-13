@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# 
+#
 # mc-toolkit - lib/get_recipes
 # © 2020-2024 Vinyl Da.i'gyu-Kazotetsu [https://www.queengoob.org].
 # This code is licensed under the GNU GPLv3 license (https://choosealicense.com/licenses/gpl-3.0/).
@@ -183,7 +183,7 @@ def create_variant_recipe(variant, cost):
 				[cost, cost, cost]
 			]
 		}
-	if variant in ['trapdoor', 'wall']:
+	if variant in ['trapdoor', 'wall', 'shelf']:
 		return {
 			'count': 2 if variant == 'trapdoor' else 6,
 			'ingredients': {
@@ -194,7 +194,7 @@ def create_variant_recipe(variant, cost):
 				[cost, cost, cost]
 			]
 		}
-	
+
 	raise Exception(f'Unhandled type "{variant}" detected for variant!')
 
 # Simple recipe functions -- see net.minecraft.data.recipes.RecipeProvider (1.20.2)
@@ -229,7 +229,7 @@ def simple_func(func_type, match):
 		}
 	if func_type in ['carpet', 'carpetFromWool']:
 		return create_variant_recipe('carpet', cost)
-	if func_type in ['chiseled', 'chiseledBuilder']:
+	if func_type in ['chiseled', 'waxedChiseled', 'chiseledBuilder']:
 		return create_variant_recipe('slab', cost)
 	if func_type == 'chestBoat':
 		return {
@@ -307,10 +307,10 @@ def simple_func(func_type, match):
 			'count': 6,
 			'ingredients': {
 				cost: 6,
-				'CHAIN': 2,
+				'IRON_CHAIN': 2,
 			},
 			'pattern': [
-				['CHAIN', '', 'CHAIN'],
+				['IRON_CHAIN', '', 'IRON_CHAIN'],
 				[cost, cost, cost],
 				[cost, cost, cost]
 			]
@@ -378,7 +378,7 @@ def simple_func(func_type, match):
 			},
 			'pattern': 'stonecutter'
 		}
-	if func_type in ['wall', 'wallBuilder']:
+	if func_type in ['wall', 'wallBuilder', 'shelf']:
 		return create_variant_recipe('wall', cost)
 	if func_type == 'woodenBoat':
 		return {
@@ -441,7 +441,7 @@ def simple_func(func_type, match):
 				['DRIED_GHAST', cost, 'DRIED_GHAST']
 			]
 		}
-	
+
 	raise Exception(f'Unhandled type "{func_type}" detected for simple recipe function!\n{match.group(0)}')
 
 def process_VanillaRecipe_line(recipes, line, simplest_only, dye_colors, smeltables):
