@@ -24,10 +24,6 @@ script_dir = Path(os.path.dirname(__file__))
 output_dir = script_dir / "output"
 
 base_worth = yaml.load(open(script_dir / "base_worth.yml", 'r'), Loader=Loader)
-new_base = {k: float(max(round(base_worth[k] * 1.65), 1)) for k in base_worth}
-with open("round_worth.yml", "w") as file:
-    yaml.dump(new_base, file)
-base_worth = new_base
 worth_header = open(script_dir / "worth_yml_header.yml", "r").read()
 
 def remap_ingredient(item_id):
@@ -69,7 +65,7 @@ def remap_ingredient(item_id):
 
 
 def add_to_worth(worth, item_id, value):
-	worth[item_id] = float(max(round(value), 1))
+	worth[item_id] = round(value, 2)
 
 # Calculate worth for a specific recipe
 def calculate_worth_from_recipe(items, worth, item_id):
@@ -160,11 +156,21 @@ def calculate_worth(worth, items):
 			add_to_worth(worth, item, worth['COPPER_BLOCK'] + min(worth['CARVED_PUMPKIN'], worth['JACK_O_LANTERN']))
 			continue
 
-		# Copper golem statues
-		elif item == "POTION{potion:water}":
-			if not 'GLASS_BOTTLE' in worth:
+		# Copper stonecutter recipes
+		elif "CUT_COPPER" in item or "CHISELED_COPPER" in item or "COPPER_GRATE" in item:
+			base = 'COPPER_BLOCK'
+			if item.startswith('EXPOSED_'):
+				base = 'EXPOSED_COPPER'
+			if item.startswith('WEATHERED_'):
+				base = 'WEATHERED_COPPER'
+			if item.startswith('OXIDIZED_'):
+				base = 'OXIDIZED_COPPER'
+			if not base in worth:
 				continue # Need to wait for calculation
-			add_to_worth(worth, item, worth['GLASS_BOTTLE'] + 4)
+			div = 4
+			if item.endswith('SLAB'):
+				div = 8
+			add_to_worth(worth, item, round(worth[base] / div, 2))
 			continue
 
 		if not recipe:
@@ -357,6 +363,13 @@ def generate_worth(mc_version, no_cache=False, outpath=output_dir / "worth.yml",
 	with open(outpath, 'w') as worthfile:
 		worthfile.write(worth_header + "\n\n")
 		worthfile.write(yaml.dump({'worth': worth}, Dumper=Dumper))
+
+	int_worth = {k: float(max(round(worth[k] * 1.65), 1)) for k in worth}
+	int_outpath = output_dir / "worth_round.yml"
+	with open(int_outpath, 'w') as worthfile:
+		worthfile.write(worth_header + "\n\n")
+		worthfile.write(yaml.dump({'worth': int_worth}, Dumper=Dumper))
+
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(prog="generate_worth", description="Generate an EssentialsX worth.yml file based on Minecraft recipes and a few base prices")
