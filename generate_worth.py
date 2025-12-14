@@ -336,6 +336,15 @@ def generate_worth(mc_version, no_cache=False, outpath=output_dir / "worth.yml",
 	source_path = prepare_source(mc_version)
 	items = get_items(source_path, mc_version, no_cache)['items']
 	add_potions(items)
+	if 'COPPER_CHAIN' not in items:
+		items['COPPER_CHAIN'] = [{'count': 1, 'ingredients': {'COPPER_NUGGET': 2, 'COPPER_INGOT': 1}, 'pattern': [['COPPER_NUGGET'], ['COPPER_INGOT'], ['COPPER_NUGGET']]}]
+		items['WAXED_COPPER_CHAIN'] = [{'count': 1, 'ingredients': {'COPPER_CHAIN': 1, 'HONEYCOMB': 1}, 'pattern': [['COPPER_CHAIN', 'HONEYCOMB']]}]
+		items['WEATHERED_COPPER_CHAIN'] = []
+		items['WAXED_WEATHERED_COPPER_CHAIN'] = [{'count': 1, 'ingredients': {'WEATHERED_COPPER_CHAIN': 1, 'HONEYCOMB': 1}, 'pattern': [['WEATHERED_COPPER_CHAIN', 'HONEYCOMB']]}]
+		items['EXPOSED_COPPER_CHAIN'] = []
+		items['WAXED_EXPOSED_COPPER_CHAIN'] = [{'count': 1, 'ingredients': {'EXPOSED_COPPER_CHAIN': 1, 'HONEYCOMB': 1}, 'pattern': [['EXPOSED_COPPER_CHAIN', 'HONEYCOMB']]}]
+		items['OXIDIZED_COPPER_CHAIN'] = []
+		items['WAXED_OXIDIZED_COPPER_CHAIN'] = [{'count': 1, 'ingredients': {'OXIDIZED_COPPER_CHAIN': 1, 'HONEYCOMB': 1}, 'pattern': [['OXIDIZED_COPPER_CHAIN', 'HONEYCOMB']]}]
 	worth = base_worth
 
 	calculated_items = len(worth.keys())
